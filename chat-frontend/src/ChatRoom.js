@@ -34,7 +34,7 @@ const ChatRoom = () => {
 
   const sendMessage = () => {
     if (user && message) {
-      socket.emit("sendMessage", { user, message });
+      socket.emit("message", { user, message });
       setMessage(""); // Clear input
     }
   };

@@ -24,23 +24,34 @@ mongoose.connect(process.env.MONGODB_URI, {
 }).then(() => console.log("MongoDB connected"))
   .catch(err => console.log(err));
 
+// REST endpoint to fetch existing messages
+app.get('/messages', async (req, res) => {
+    try {
+        const messages = await ChatMessage.find().sort({ timestamp: 1 });
+        res.json(messages);
+    } catch (err) {
+        console.error('Error fetching messages', err);
+        res.status(500).json({ error: 'Failed to fetch messages' });
+    }
+});
+
 io.on('connection', (socket) => {
     console.log('A user connected');
 
     socket.on('message', async (data) => {
-    try{
-        const {user, message} = data;
-        const chatMessage = new ChatMessage({user, message});
-        await chatMessage.save();
-        io.emit('message', chatMessage);
-    }catch(err){
-        console.error('Error saving message to database', err);
-    }
-});
+        try{
+            const {user, message} = data;
+            const chatMessage = new ChatMessage({user, message});
+            await chatMessage.save();
+            io.emit('message', chatMessage);
+        }catch(err){
+            console.error('Error saving message to database', err);
+        }
+    });
 
-socket.on('disconnect', () => {
-    console.log('A user disconnected');
-});
+    socket.on('disconnect', () => {
+        console.log('A user disconnected');
+    });
 });
 
 server.listen(PORT, () => {
